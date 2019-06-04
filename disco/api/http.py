@@ -80,6 +80,7 @@ class Routes(object):
     GUILDS_MEMBERS_ME_NICK = (HTTPMethod.PATCH, GUILDS + '/members/@me/nick')
     GUILDS_MEMBERS_KICK = (HTTPMethod.DELETE, GUILDS + '/members/{member}')
     GUILDS_BANS_LIST = (HTTPMethod.GET, GUILDS + '/bans')
+    GUILDS_BANS_GET = (HTTPMethod.GET, GUILDS + '/bans/{member}')
     GUILDS_BANS_CREATE = (HTTPMethod.PUT, GUILDS + '/bans/{user}')
     GUILDS_BANS_DELETE = (HTTPMethod.DELETE, GUILDS + '/bans/{user}')
     GUILDS_ROLES_LIST = (HTTPMethod.GET, GUILDS + '/roles')

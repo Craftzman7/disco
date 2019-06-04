@@ -36,6 +36,19 @@ DefaultMessageNotificationsLevel = Enum(
     ONLY_MENTIONS=1,
 )
 
+SystemChannelFlag = Enum(
+    NONE=0,
+    SUPPRESS_JOIN_NOTIFICATIONS=1 << 0,
+    SUPPRESS_PREMIUM_SUBSCRIPTIONS=1 << 1,
+)
+
+PremiumTier = Enum(
+    NONE=0,
+    TIER_1=1,
+    TIER_2=2,
+    TIER_3=3,
+)
+
 
 class GuildEmoji(Emoji):
     """
@@ -154,6 +167,8 @@ class GuildMember(SlottedModel):
         Whether this member is server voice-deafened.
     joined_at : datetime
         When this user joined the guild.
+    premium_since : datetime
+        When this member started boosting the server.
     roles : list(snowflake)
         Roles this member is part of.
     """
@@ -163,6 +178,7 @@ class GuildMember(SlottedModel):
     mute = Field(bool)
     deaf = Field(bool)
     joined_at = Field(datetime)
+    premium_since = Field(datetime)
     roles = ListField(snowflake)
 
     def __str__(self):
@@ -279,6 +295,8 @@ class Guild(SlottedModel, Permissible):
         The id of the embed channel.
     system_channel_id : snowflake
         The id of the system channel.
+    widget_channel_id : snowflake
+        The id of the server widget channel
     name : str
         Guild's name.
     icon : str
@@ -293,12 +311,30 @@ class Guild(SlottedModel, Permissible):
         Delay after which users are automatically moved to the afk channel.
     embed_enabled : bool
         Whether the guild's embed is enabled.
+    widget_enabled : bool
+        Whether the guild's server widget is enabled.
     verification_level : int
         The verification level used by the guild.
     mfa_level : int
         The MFA level used by the guild.
     features : list(str)
         Extra features enabled for this guild.
+    system_channel_flags : int
+        The system messages that are disabled.
+    vanity_url_code : str
+        Guild's vanity url code
+    description : str
+        Guild's description
+    max_presences : int
+        Guild's maximum amount of presences
+    max_members : int
+        Guild's maximum amount of members
+    preferred_locale : str
+        Guild's primary language
+    premium_tier : int
+        Guild's premium tier
+    premium_subscription_count : int
+        Guild's server boosting count
     members : dict(snowflake, :class:`GuildMember`)
         All of the guild's members.
     channels : dict(snowflake, :class:`disco.types.channel.Channel`)
@@ -315,6 +351,7 @@ class Guild(SlottedModel, Permissible):
     afk_channel_id = Field(snowflake)
     embed_channel_id = Field(snowflake)
     system_channel_id = Field(snowflake)
+    widget_channel_id = Field(snowflake)
     name = Field(text)
     icon = Field(text)
     splash = Field(text)
@@ -322,11 +359,19 @@ class Guild(SlottedModel, Permissible):
     region = Field(text)
     afk_timeout = Field(int)
     embed_enabled = Field(bool)
+    widget_enabled = Field(bool)
     verification_level = Field(enum(VerificationLevel))
     explicit_content_filter = Field(enum(ExplicitContentFilterLevel))
     default_message_notifications = Field(enum(DefaultMessageNotificationsLevel))
     mfa_level = Field(int)
     features = ListField(str)
+    vanity_url_code = Field(str)
+    description = Field(str)
+    max_presences = Field(int, default=5000)
+    max_members = Field(int)
+    preferred_locale = Field(str)
+    premium_tier = Field(enum(PremiumTier))
+    premium_subscription_count = Field(int)
     members = AutoDictField(GuildMember, 'id')
     channels = AutoDictField(Channel, 'id')
     roles = AutoDictField(Role, 'id')
@@ -443,6 +488,9 @@ class Guild(SlottedModel, Permissible):
     def get_bans(self):
         return self.client.api.guilds_bans_list(self.id)
 
+    def get_ban(self, user):
+        return self.client.api.guilds_bans_get(self.id, user)
+
     def delete_ban(self, user, **kwargs):
         self.client.api.guilds_bans_delete(self.id, to_snowflake(user), **kwargs)
 
@@ -507,11 +555,16 @@ class Guild(SlottedModel, Permissible):
     def get_emojis(self):
         return self.client.api.guilds_emojis_list(self.id)
 
-    def get_icon_url(self, fmt='webp', size=1024):
+    def get_icon_url(self, fmt=None, size=1024):
         if not self.icon:
             return ''
 
-        return 'https://cdn.discordapp.com/icons/{}/{}.{}?size={}'.format(self.id, self.icon, fmt, size)
+        if fmt is not None:
+            return 'https://cdn.discordapp.com/icons/{}/{}.{}?size={}'.format(self.id, self.icon, fmt, size)
+        if self.icon.startswith('a_'):
+            return 'https://cdn.discordapp.com/icons/{}/{}.gif?size={}'.format(self.id, self.icon, size)
+        else:
+            return 'https://cdn.discordapp.com/icons/{}/{}.webp?size={}'.format(self.id, self.icon, size)
 
     def get_splash_url(self, fmt='webp', size=1024):
         if not self.splash:
