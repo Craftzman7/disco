@@ -1,5 +1,5 @@
-gevent==1.2.2
+gevent==1.4.0
 holster==2.0.0
-requests==2.20.1
-six==1.11.0
-websocket-client==0.55.0
+requests==2.21.0
+six==1.12.0
+websocket-client==0.56.0
