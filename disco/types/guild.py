@@ -372,7 +372,7 @@ class Guild(SlottedModel, Permissible):
     max_members = Field(int, default=250000)
     preferred_locale = Field(str)
     premium_tier = Field(enum(PremiumTier))
-    premium_subscription_count = Field(int)
+    premium_subscription_count = Field(int, default=0)
     members = AutoDictField(GuildMember, 'id')
     channels = AutoDictField(Channel, 'id')
     roles = AutoDictField(Role, 'id')
