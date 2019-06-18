@@ -1,6 +1,9 @@
 from holster.enum import Enum
-
-from disco.types.base import SlottedModel, Field, snowflake, text, with_equality, with_hash
+from datetime import datetime
+from disco.types.base import (
+    SlottedModel, Field, snowflake, text, with_equality, with_hash, ListField, 
+    cached_property
+)
 
 DefaultAvatars = Enum(
     BLURPLE=0,
@@ -59,6 +62,7 @@ GameType = Enum(
     STREAMING=1,
     LISTENING=2,
     WATCHING=3,
+    CUSTOM_STATUS=4,
 )
 
 Status = Enum(
@@ -69,14 +73,66 @@ Status = Enum(
     'OFFLINE',
 )
 
+ClientPresenceStatus = Enum(
+    'ONLINE',
+    'IDLE',
+    'DND',
+    'OFFLINE',
+)
+
+class Party(SlottedModel):
+    id = Field(text)
+    size = ListField(int)
+
+
+class Assets(SlottedModel):
+    large_image = Field(text)
+    large_text = Field(text)
+    small_image = Field(text)
+    small_text = Field(text)
+
+
+class Secrets(SlottedModel):
+    join = Field(text)
+    spectate = Field(text)
+    match = Field(text)
+
+
+class Timestamps(SlottedModel):
+    start = Field(int)
+    end = Field(int)
+
+    @cached_property
+    def start_time(self):
+        return datetime.utcfromtimestamp(self.start / 1000)
+
+    @cached_property
+    def end_time(self):
+        return datetime.utcfromtimestamp(self.end / 1000)
+
 
 class Game(SlottedModel):
     type = Field(GameType)
     name = Field(text)
     url = Field(text)
+    timestamps = Field(Timestamps)
+    application_id = Field(text)
+    details = Field(text)
+    state = Field(text)
+    party = Field(Party)
+    assets = Field(Assets)
+    secrets = Field(Secrets)
+    instance = Field(bool)
+    flags = Field(int)
 
+class ClientStatus(SlottedModel):
+    desktop = Field(ClientPresenceStatus)
+    mobile = Field(ClientPresenceStatus)
+    web = Field(ClientPresenceStatus)
 
 class Presence(SlottedModel):
     user = Field(User, alias='user', ignore_dump=['presence'])
     game = Field(Game)
     status = Field(Status)
+    activities = ListField(Game)
+    client_status = Field(ClientStatus)
