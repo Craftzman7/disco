@@ -72,7 +72,7 @@ class GatewayClient(LoggingClass):
         self._heartbeat_acknowledged = True
 
         # Latency
-        self._last_heartbeat_ack = 0
+        self._last_heartbeat = 0
         self.latency = -1
 
     def send(self, op, data):
@@ -95,7 +95,7 @@ class GatewayClient(LoggingClass):
                 self.ws.close(status=4000)
                 return
 
-            self._last_heartbeat_ack = time.time()
+            self._last_heartbeat = time.time()
             self._send(OPCode.HEARTBEAT, self.seq)
             self._heartbeat_acknowledged = False
             gevent.sleep(interval / 1000)
