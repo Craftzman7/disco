@@ -311,8 +311,10 @@ class Bot(LoggingClass):
                         # If nickname is set, filter both the normal and nick mentions
                         if member.nick:
                             content = content.replace(member.mention, '', 1)
+                        content = content.replace('<@!{}>'.format(member.user.id), '', 1)
                         content = content.replace(member.user.mention, '', 1)
                 else:
+                    content = content.replace('<@!{}>'.format(self.client.state.me.id), '', 1)
                     content = content.replace(self.client.state.me.mention, '', 1)
             elif mention_everyone:
                 content = content.replace('@everyone', '', 1)
