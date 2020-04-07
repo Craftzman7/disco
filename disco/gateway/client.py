@@ -63,6 +63,7 @@ class GatewayClient(LoggingClass):
         self.shutting_down = False
         self.replaying = False
         self.replayed_events = 0
+        self.sampled_events = 0
 
         # Cached gateway URL
         self._cached_gateway_url = None
@@ -87,6 +88,9 @@ class GatewayClient(LoggingClass):
             'd': data,
         }), self.encoder.OPCODE)
 
+    def reset_sampled_events(self):
+        self.sampled_events = 0
+
     def heartbeat_task(self, interval):
         while True:
             if not self._heartbeat_acknowledged:
@@ -104,6 +108,7 @@ class GatewayClient(LoggingClass):
         obj = GatewayEvent.from_dispatch(self.client, packet)
         self.log.debug('GatewayClient.handle_dispatch %s', obj.__class__.__name__)
         self.client.events.emit(obj.__class__.__name__, obj)
+        self.sampled_events += 1
         if self.replaying:
             self.replayed_events += 1
 
