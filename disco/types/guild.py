@@ -368,7 +368,7 @@ class Guild(SlottedModel, Permissible):
     system_channel_flags = Field(int)
     vanity_url_code = Field(str)
     description = Field(str)
-    max_presences = Field(int, default=5000)
+    max_presences = Field(int, default=25000)
     max_members = Field(int, default=250000)
     preferred_locale = Field(str)
     premium_tier = Field(enum(PremiumTier))
