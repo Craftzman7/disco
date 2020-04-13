@@ -10,6 +10,7 @@ from disco.util.config import Config
 from disco.util.string import underscore
 from disco.util.hashmap import HashMap, DefaultHashMap
 from disco.voice.client import VoiceState
+from disco.gateway.client import GatewayIntent
 
 
 class StackMessage(namedtuple('StackMessage', ['id', 'channel_id', 'author_id'])):
@@ -145,6 +146,9 @@ class State(object):
         for message in reversed(next(channel.messages_iter(bulk=True))):
             self.messages[channel.id].append(
                 StackMessage(message.id, message.channel_id, message.author.id))
+
+    def is_presence_update_enabled(self):
+        return (self.client.config.intents & GatewayIntent.GUILD_PRESENCES) == GatewayIntent.GUILD_PRESENCES or self.client.config.guild_subscriptions is True
 
     def on_ready(self, event):
         self.me = event.user
@@ -321,6 +325,32 @@ class State(object):
 
         self.guilds[event.member.guild_id].members[event.member.id].inplace_update(event.member)
 
+        # Handle PresenceUpdate stuff if presence events are disabled through intents or guild_subscriptions
+        if not self.is_presence_update_enabled():
+            # TODO: this matches the recursive, hackfix method found in on_presence_update
+            user = event.member.user
+
+            # if we have the user tracked locally, we can just use the presence
+            #  update to update both their presence and the cached user object.
+            if user.id in self.users:
+                self.users[user.id].inplace_update(user)
+            else:
+                # Otherwise this user does not exist in our local cache, so we can
+                #  use this opportunity to add them. They will quickly fall out of
+                #  scope and be deleted if they aren't used below
+                self.users[user.id] = user
+
+            # Some updates come with a guild_id and roles the user is in, we should
+            #  use this to update the guild member, but only if we have the guild
+            #  cached.
+            if event.member.roles is UNSET or event.member.guild_id not in self.guilds:
+                return
+
+            if user.id not in self.guilds[event.member.guild_id].members:
+                return
+
+            self.guilds[event.member.guild_id].members[user.id].roles = event.member.roles
+
     def on_guild_member_remove(self, event):
         if event.guild_id not in self.guilds:
             return
@@ -354,6 +384,17 @@ class State(object):
             user = presence.user
             user.presence = presence
             self.users[user.id].inplace_update(user)
+
+            # Some updates come with a guild_id and roles the user is in, we should
+            #  use this to update the guild member, but only if we have the guild
+            #  cached.
+            if presence.roles is UNSET or event.guild_id not in self.guilds:
+                return
+
+            if member.id not in self.guilds[event.guild_id].members:
+                return
+
+            self.guilds[event.guild_id].members[user.id].roles = presence.roles
 
     def on_guild_role_create(self, event):
         if event.guild_id not in self.guilds:
