@@ -148,7 +148,7 @@ class State(object):
                 StackMessage(message.id, message.channel_id, message.author.id))
 
     def is_presence_update_enabled(self):
-        return (self.client.config.intents & GatewayIntent.GUILD_PRESENCES) == GatewayIntent.GUILD_PRESENCES or self.client.config.guild_subscriptions is True
+        return (self.client.config.intents & int(GatewayIntent.GUILD_PRESENCES)) == int(GatewayIntent.GUILD_PRESENCES) or self.client.config.guild_subscriptions is True
 
     def on_ready(self, event):
         self.me = event.user
