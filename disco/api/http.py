@@ -104,6 +104,7 @@ class Routes(object):
     GUILDS_EMOJIS_CREATE = (HTTPMethod.POST, GUILDS + '/emojis')
     GUILDS_EMOJIS_MODIFY = (HTTPMethod.PATCH, GUILDS + '/emojis/{emoji}')
     GUILDS_EMOJIS_DELETE = (HTTPMethod.DELETE, GUILDS + '/emojis/{emoji}')
+    GUILDS_PREVIEW_GET = (HTTPMethod.GET, GUILDS + '/preview')
     GUILDS_AUDITLOGS_LIST = (HTTPMethod.GET, GUILDS + '/audit-logs')
 
     # Users

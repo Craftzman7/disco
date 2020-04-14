@@ -149,6 +149,19 @@ class GuildBan(SlottedModel):
     reason = Field(text)
 
 
+class GuildPreview(SlottedModel):
+    id = Field(int)
+    name = Field(str)
+    icon = Field(str)
+    splash = Field(str)
+    discovery_splash = Field(str)
+    emojis = AutoDictField(GuildEmoji, 'id')
+    features = ListField(str)
+    approximate_member_count = Field(int)
+    approximate_presence_count = Field(int)
+    description = Field(str)
+
+
 class GuildMember(SlottedModel):
     """
     A GuildMember object.
@@ -558,6 +571,9 @@ class Guild(SlottedModel, Permissible):
 
     def get_emojis(self):
         return self.client.api.guilds_emojis_list(self.id)
+
+    def get_preview(self):
+        return self.client.api.guilds_preview_get(self.id)
 
     def get_icon_url(self, fmt=None, size=1024):
         if not self.icon:
