@@ -383,6 +383,7 @@ class Guild(SlottedModel, Permissible):
     description = Field(str)
     max_presences = Field(int, default=25000)
     max_members = Field(int, default=250000)
+    max_video_channel_users = Field(int)
     preferred_locale = Field(str)
     premium_tier = Field(enum(PremiumTier))
     premium_subscription_count = Field(int, default=0)
