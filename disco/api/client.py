@@ -146,11 +146,13 @@ class APIClient(LoggingClass):
             attachment=None,
             attachments=[],
             embed=None,
+            allowed_mentions=None,
             sanitize=False):
 
         payload = {
             'nonce': nonce,
             'tts': tts,
+            'allowed_mentions': allowed_mentions,
         }
 
         if attachment:
