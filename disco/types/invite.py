@@ -1,8 +1,14 @@
+from holster.enum import Enum
+
 from disco.types.base import SlottedModel, Field, datetime
 from disco.types.user import User
 from disco.types.guild import Guild
 from disco.types.channel import Channel
 
+
+InviteTargetUserType = Enum(
+    STREAM=1
+)
 
 class Invite(SlottedModel):
     """
@@ -12,30 +18,44 @@ class Invite(SlottedModel):
     ----------
     code : str
         The invite code.
-    inviter : :class:`disco.types.user.User`
-        The user who created this invite.
     guild : :class:`disco.types.guild.Guild`
         The guild this invite is for.
     channel : :class:`disco.types.channel.Channel`
         The channel this invite is for.
+    target_user : :class:`disco.types.user.User`
+        The user this invite targets.
+    target_user_type : int
+        The type of user target for this invite.
+    approximate_presence_count : int
+        The approximate count of online members.
+    approximate_member_count : int
+        The approximate count of total members.
+    inviter : :class:`disco.types.user.User`
+        The user who created this invite.
+    uses : int
+        The current number of times the invite was used.
+    inviter : :class:`disco.types.user.User`
+        The user who created this invite.
     max_age : int
         The time after this invite's creation at which it expires.
     max_uses : int
         The maximum number of uses.
-    uses : int
-        The current number of times the invite was used.
     temporary : bool
         Whether this invite only grants temporary membership.
     created_at : datetime
         When this invite was created.
     """
     code = Field(str)
-    inviter = Field(User)
     guild = Field(Guild)
     channel = Field(Channel)
+    target_user = Field(User)
+    target_user_type = Field(Enum(InviteTargetUserType))
+    approximate_presence_count = Field(int)
+    approximate_member_count = Field(int)
+    inviter = Field(User)
+    uses = Field(int)
     max_age = Field(int)
     max_uses = Field(int)
-    uses = Field(int)
     temporary = Field(bool)
     created_at = Field(datetime)
 
