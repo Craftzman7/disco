@@ -7,12 +7,13 @@ import unicodedata
 from holster.enum import Enum
 
 from disco.types.base import (
-    SlottedModel, Field, ListField, AutoDictField, snowflake, text,
-    datetime, enum, cached_property,
+    BitsetMap, BitsetValue, SlottedModel, Field, ListField, AutoDictField,
+    snowflake, text, datetime, enum, cached_property,
 )
 from disco.util.paginator import Paginator
 from disco.util.snowflake import to_snowflake
 from disco.types.user import User
+from disco.types.channel import ChannelType
 
 
 MessageType = Enum(
@@ -28,6 +29,10 @@ MessageType = Enum(
     GUILD_MEMBER_SUBSCRIBE_TIER_1=9,
     GUILD_MEMBER_SUBSCRIBE_TIER_2=10,
     GUILD_MEMBER_SUBSCRIBE_TIER_3=11,
+    CHANNEL_FOLLOW_ADD=12,
+    GUILD_STREAM=13,
+    GUILD_DISCOVERY_DISQUALIFIED=14,
+    GUILD_DISCOVERY_REQUALIFIED=15,
 )
 
 
@@ -116,6 +121,12 @@ class MessageApplication(SlottedModel):
     description = Field(text)
     icon = Field(text)
     name = Field(text)
+
+
+class MessageReference(SlottedModel):
+    message_id = Field(snowflake)
+    channel_id = Field(snowflake)
+    guild_id = Field(snowflake)
 
 
 class MessageActivity(SlottedModel):
@@ -360,6 +371,25 @@ class MessageAttachment(SlottedModel):
     width = Field(int)
 
 
+class ChannelMention(SlottedModel):
+    id = Field(snowflake)
+    guild_id = Field(snowflake)
+    type = Field(enum(ChannelType))
+    name = Field(text)
+
+
+class MessageFlags(BitsetMap):
+    CROSSPOSTED = 1 << 0
+    IS_CROSSPOST = 1 << 1
+    SUPPRESS_EMBEDS = 1 << 2
+    SOURCE_MESSAGE_DELETED = 1 << 3
+    URGENT = 1 << 4
+
+
+class MessageFlagValue(BitsetValue):
+    map = MessageFlags
+
+
 class Message(SlottedModel):
     """
     Represents a Message created within a Channel on Discord.
@@ -390,6 +420,8 @@ class Message(SlottedModel):
         Whether this message is pinned in the channel.
     mentions : dict[snowflake, `User`]
         Users mentioned within this message.
+    mention_channels : list[`ChannelMention`]
+        The channels mentioned in this message if it is cross-posted.
     mention_roles : list[snowflake]
         IDs for roles mentioned within this message.
     embeds : list[`MessageEmbed`]
@@ -402,6 +434,10 @@ class Message(SlottedModel):
         The activity of a Rich Presence-related chat embed.
     application : `MessageApplication`
         The application of a Rich Presence-related chat embed.
+    message_reference: `MessageReference`
+        The reference of a cross-posted message.
+    flags: `MessageFlagValue`
+        The flags attached to a message.
     """
     id = Field(snowflake)
     channel_id = Field(snowflake)
@@ -416,12 +452,15 @@ class Message(SlottedModel):
     mention_everyone = Field(bool)
     pinned = Field(bool)
     mentions = AutoDictField(User, 'id')
+    mention_channels = ListField(ChannelMention)
     mention_roles = ListField(snowflake)
     embeds = ListField(MessageEmbed)
     attachments = AutoDictField(MessageAttachment, 'id')
     reactions = ListField(MessageReaction)
     activity = Field(MessageActivity)
     application = Field(MessageApplication)
+    message_reference = Field(MessageReference)
+    flags = Field(MessageFlagValue)
 
     def __str__(self):
         return '<Message {} ({})>'.format(self.id, self.channel_id)
@@ -512,6 +551,23 @@ class Message(SlottedModel):
             The deleted message object.
         """
         return self.client.api.channels_messages_delete(self.channel_id, self.id)
+
+    def set_embeds_suppressed(self, state):
+        """
+        Toggle this message's embed suppression.
+        Parameters
+        ----------
+        `state`
+            Whether this message's embeds should be suppressed.
+        """
+        flags = int(self.flags or 0)
+
+        if state:
+            flags |= MessageFlags.SUPPRESS_EMBEDS
+        else:
+            flags &= ~MessageFlags.SUPPRESS_EMBEDS
+
+        self.edit(flags=flags)
 
     def get_reactors(self, emoji, *args, **kwargs):
         """

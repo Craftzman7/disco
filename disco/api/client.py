@@ -190,8 +190,8 @@ class APIClient(LoggingClass):
 
         return Message.create(self.client, r.json())
 
-    def channels_messages_modify(self, channel, message, content=None, embed=None, sanitize=False):
-        payload = {}
+    def channels_messages_modify(self, channel, message, content=None, embed=None, flags=None, allowed_mentions=None, sanitize=False):
+        payload = optional(flags=flags, allowed_mentions=allowed_mentions)
 
         if content is not None:
             if sanitize:
