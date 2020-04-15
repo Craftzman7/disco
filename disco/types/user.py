@@ -1,7 +1,7 @@
 from holster.enum import Enum
 from datetime import datetime
 from disco.types.base import (
-    SlottedModel, Field, snowflake, text, with_equality, with_hash, ListField, 
+    BitsetMap, BitsetValue, SlottedModel, Field, snowflake, text, with_equality, with_hash, ListField,
     cached_property
 )
 
@@ -13,6 +13,29 @@ DefaultAvatars = Enum(
     RED=4,
 )
 
+PremiumType = Enum(
+    CLASSIC=1,
+    NITRO=2,
+)
+
+
+class UserFlags(BitsetMap):
+    STAFF = 1 << 0
+    PARTNER = 1 << 1
+    HS_EVENTS = 1 << 2
+    BUG_HUNTER_LEVEL_1 = 1 << 3
+    HS_BRAVERY = 1 << 6
+    HS_BRILLIANCE = 1 << 7
+    HS_BALANCE = 1 << 8
+    EARLY_SUPPORTER = 1 << 9
+    TEAM_USER = 1 << 10
+    SYSTEM = 1 << 12
+    BUG_HUNTER_LEVEL_2 = 1 << 14
+    VERIFIED_BOT = 1 << 16
+    VERIFIED_DEVELOPER = 1 << 17
+
+class UserFlagsValue(BitsetValue):
+    map = UserFlags
 
 class User(SlottedModel, with_equality('id'), with_hash('id')):
     id = Field(snowflake)
@@ -20,9 +43,14 @@ class User(SlottedModel, with_equality('id'), with_hash('id')):
     avatar = Field(text)
     discriminator = Field(text)
     bot = Field(bool, default=False)
+    system = Field(bool, default=False)
+    mfa_enabled = Field(bool)
+    locale = Field(text)
     verified = Field(bool)
     email = Field(text)
-
+    flags = Field(UserFlagsValue, cast=int)
+    public_flags = Field(UserFlagsValue, cast=int, default=0)
+    premium_type = Field(Enum(PremiumType))
     presence = Field(None)
 
     def get_avatar_url(self, fmt=None, size=1024):
