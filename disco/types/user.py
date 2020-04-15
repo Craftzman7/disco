@@ -1,7 +1,7 @@
 from holster.enum import Enum
 from datetime import datetime
 from disco.types.base import (
-    BitsetMap, BitsetValue, SlottedModel, Field, snowflake, text, with_equality, with_hash, ListField,
+    BitsetMap, BitsetValue, SlottedModel, Field, snowflake, text, with_equality, with_hash, ListField, enum,
     cached_property
 )
 
@@ -50,7 +50,7 @@ class User(SlottedModel, with_equality('id'), with_hash('id')):
     email = Field(text)
     flags = Field(UserFlagsValue, cast=int)
     public_flags = Field(UserFlagsValue, cast=int, default=0)
-    premium_type = Field(Enum(PremiumType))
+    premium_type = Field(enum(PremiumType))
     presence = Field(None)
 
     def get_avatar_url(self, fmt=None, size=1024):
