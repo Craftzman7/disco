@@ -1,6 +1,6 @@
 from holster.enum import Enum
 
-from disco.types.base import SlottedModel, Field, datetime
+from disco.types.base import SlottedModel, Field, datetime, enum
 from disco.types.user import User
 from disco.types.guild import Guild
 from disco.types.channel import Channel
@@ -49,7 +49,7 @@ class Invite(SlottedModel):
     guild = Field(Guild)
     channel = Field(Channel)
     target_user = Field(User)
-    target_user_type = Field(Enum(InviteTargetUserType))
+    target_user_type = Field(enum(InviteTargetUserType))
     approximate_presence_count = Field(int)
     approximate_member_count = Field(int)
     inviter = Field(User)
