@@ -115,6 +115,8 @@ class Role(SlottedModel):
         The permissions this role grants.
     position : int
         The position of this role in the hierarchy.
+    tags : dict(str, snowflake)
+        The tags of this role.
     """
     id = Field(snowflake)
     guild_id = Field(snowflake)
@@ -125,6 +127,7 @@ class Role(SlottedModel):
     permissions = Field(PermissionValue)
     position = Field(int)
     mentionable = Field(bool)
+    tags = DictField(text, snowflake)
 
     def __str__(self):
         return self.name
