@@ -1,8 +1,7 @@
 # disco
 
-[![PyPI](https://img.shields.io/pypi/l/disco-py.svg)](https://pypi.python.org/pypi/disco-py/)
-[![PyPI](https://img.shields.io/pypi/v/disco-py.svg)](https://pypi.python.org/pypi/disco-py/)
-[![TravisCI](https://img.shields.io/travis/b1naryth1ef/disco.svg)](https://travis-ci.org/b1naryth1ef/disco/)
+### THIS IS A FORK I USE FOR MY OWN PROJECTS
+### I WILL NOT PROVIDE SUPPORT FOR IT
 
 Disco is an extensive and extendable Python 2.x/3.x library for the [Discord API](https://discordapp.com/developers/docs/intro). Join the Official channel and chat [here](https://discord.gg/WMzzPec). Disco boasts the following major features:
 
