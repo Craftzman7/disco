@@ -32,7 +32,8 @@ class UserFlags(BitsetMap):
     SYSTEM = 1 << 12
     BUG_HUNTER_LEVEL_2 = 1 << 14
     VERIFIED_BOT = 1 << 16
-    VERIFIED_DEVELOPER = 1 << 17
+    EARLY_VERIFIED_DEVELOPER = 1 << 17
+    CERTIFIED_MODERATOR = 1 << 18
 
 class UserFlagsValue(BitsetValue):
     map = UserFlags
